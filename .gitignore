@@ -1,0 +1,57 @@
+# --- GENERAL / SYSTEM ---
+node_modules/
+dist/
+/build
+.env
+.env.*
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# --- BACKEND (NestJS) ---
+/backend/dist/
+/backend/node_modules/
+/backend/.temp/
+/backend/.tmp/
+/backend/content/
+*.tsbuildinfo
+/backend/metadata.json
+
+# --- FRONTEND (Angular) ---
+/frontend/dist/
+/frontend/.angular/
+/frontend/node_modules/
+
+# --- PRISMA & DATABASE ---
+/backend/prisma/migrations/
+/backend/prisma/*.db
+/backend/prisma/*.db-journal
+/backend/prisma/dev.db
+*.sql
+*.dump
+
+# --- LOGS ---
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+/backend/coverage
+/backend/.nyc_output
+
+# --- RUNTIME ---
+pids
+*.pid
