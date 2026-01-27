@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PrismaProductRepository } from './infrastructure/persistence/prisma-product.repository';
+import { AmazonScraper } from './infrastructure/scrapers/amazon.scraper';
 
 @Module({
     providers: [
@@ -7,6 +8,7 @@ import { PrismaProductRepository } from './infrastructure/persistence/prisma-pro
             provide: 'IProductRepository',
             useClass: PrismaProductRepository,
         },
+        AmazonScraper,
     ],
     exports: ['IProductRepository'],
 })
