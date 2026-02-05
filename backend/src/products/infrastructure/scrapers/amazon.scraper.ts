@@ -20,11 +20,20 @@ export class AmazonScraper {
         const url = `https://www.amazon.es/dp/${asin}`;
         await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-        const title = await page.$eval('#productTitle', (el) => el.textContent?.trim() || '');
-        const priceRaw = await page.$eval('.a-price-whole', (el) => el.textContent?.trim() || '0');
-        const imageUrl = await page.$eval('#landingImage', (el) => (el as HTMLImageElement).src);
+        const title = (await page.textContent('#productTitle'))?.trim() ?? '';
+        const priceWhole = (await page.textContent('.a-price-whole'))?.trim() ?? '';
+        const priceFraction = (await page.textContent('.a-price-fraction'))?.trim() ?? '';
+        const priceRaw = priceFraction
+            ? `${priceWhole}${priceFraction ? `.${priceFraction}` : ''}`
+            : priceWhole;
+        const imageUrl = (await page.getAttribute('#landingImage', 'src'))?.trim() ?? '';
 
-        const price = parseFloat(priceRaw.replace(',', '.'));
+        const price = this.parsePrice(priceRaw);
+
+        if (!title || !imageUrl || !Number.isFinite(price)) {
+            await browser.close();
+            throw new Error('Producto inválido o incompleto.');
+        }
 
         const product = new Product(
             uuidv4(),
@@ -42,5 +51,19 @@ export class AmazonScraper {
 
         await browser.close();
         return savedProduct;
+    }
+
+    private parsePrice(raw: string): number {
+        const cleaned = raw.replace(/[^\d.,-]/g, '');
+        if (!cleaned) return Number.NaN;
+
+        let normalized = cleaned;
+        if (normalized.includes(',') && normalized.includes('.')) {
+            normalized = normalized.replace(/\./g, '').replace(',', '.');
+        } else if (normalized.includes(',')) {
+            normalized = normalized.replace(',', '.');
+        }
+
+        return Number.parseFloat(normalized);
     }
 }

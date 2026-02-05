@@ -1,10 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ScrapeAmazonProductUseCase } from '../../application/use-cases/scrape-amazon-product.use-case';
 import { Product } from '../../domain/entities/product.entity';
-
-type ScrapeAmazonProductRequest = {
-    asin: string;
-};
+import { ScrapeAmazonProductDto } from './dto/scrape-amazon-product.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -12,8 +9,8 @@ export class ProductsController {
 
     @Post('scrape')
     async scrapeAmazonProductByAsin(
-        @Body() body: ScrapeAmazonProductRequest
+        @Body() body: ScrapeAmazonProductDto
     ): Promise<Product> {
-        return this.scrapeAmazonProduct.execute(body.asin ?? '');
+        return this.scrapeAmazonProduct.execute(body.asin);
     }
 }
