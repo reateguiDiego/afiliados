@@ -10,7 +10,7 @@
 
 .footer-top {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
+  grid-template-columns: 1.4fr 2fr;
   gap: 1.5rem;
   align-items: start;
 }
@@ -41,10 +41,12 @@
   font-size: 0.95rem;
 }
 
-.footer-links,
-.footer-legal {
-  display: grid;
-  gap: 0.45rem;
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1rem; 
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .footer-links a,
