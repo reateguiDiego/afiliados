@@ -1,0 +1,83 @@
+.site-footer {
+  margin-top: 2.5rem;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}
+
+.footer-inner {
+  padding: 1.6rem 0 1.1rem;
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.footer-brand .brand-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.footer-brand .brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 0.9rem;
+}
+
+.footer-desc {
+  margin: 0.6rem 0 0;
+  color: var(--color-text-muted);
+  max-width: 42ch;
+  font-size: 0.95rem;
+}
+
+.footer-links,
+.footer-legal {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.footer-links a,
+.footer-legal a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  width: fit-content;
+}
+
+.footer-links a:hover,
+.footer-legal a:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footer-bottom {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.footer-bottom p {
+  margin: 0;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .footer-top {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,1 +1,15 @@
-<p>header works!</p>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" routerLink="/">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <span class="brand-text">Top de Tops</span>
+    </a>
+
+    <nav class="nav" aria-label="Navegación principal">
+      <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+      <a routerLink="/categorias" routerLinkActive="is-active">Categorías</a>
+      <a routerLink="/comparativas" routerLinkActive="is-active">Comparativas</a>
+      <a routerLink="/guias" routerLinkActive="is-active">Guías</a>
+    </nav>
+  </div>
+</header>
