@@ -2,7 +2,12 @@ import { Injectable, Inject } from '@nestjs/common';
 import { chromium } from 'playwright';
 import type { IProductRepository } from '../../domain/repositories/product.repository';
 import { Product } from '../../domain/entities/product.entity';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
+import {
+    AmazonBlockedRequestError,
+    AmazonProductDataInvalidError,
+    AmazonProductNotFoundError,
+} from './amazon-scraper.errors';
 
 @Injectable()
 export class AmazonScraper {
@@ -15,49 +20,68 @@ export class AmazonScraper {
         const browser = await chromium.launch({ headless: true });
         const page = await browser.newPage();
 
-        await page.setExtraHTTPHeaders({ 'Accept-Language': 'es-ES,es;q=0.9' });
+        try {
+            await page.setExtraHTTPHeaders({ 'Accept-Language': 'es-ES,es;q=0.9' });
 
-        const url = `https://www.amazon.es/dp/${asin}`;
-        await page.goto(url, { waitUntil: 'domcontentloaded' });
+            const url = `https://www.amazon.es/dp/${asin}`;
+            const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
+            const bodyText = (await page.textContent('body'))?.toLowerCase() ?? '';
+            const currentUrl = page.url().toLowerCase();
+            const status = response?.status();
 
-        const title = (await page.textContent('#productTitle'))?.trim() ?? '';
-        const priceWhole = (await page.textContent('.a-price-whole'))?.trim() ?? '';
-        const priceFraction = (await page.textContent('.a-price-fraction'))?.trim() ?? '';
-        const priceRaw = priceFraction
-            ? `${priceWhole}${priceFraction ? `.${priceFraction}` : ''}`
-            : priceWhole;
-        const imageUrl = (await page.getAttribute('#landingImage', 'src'))?.trim() ?? '';
+            if (
+                status === 404 ||
+                currentUrl.includes('/errors/404') ||
+                bodyText.includes('no hemos podido encontrar esa página') ||
+                bodyText.includes('currently unavailable')
+            ) {
+                throw new AmazonProductNotFoundError(asin);
+            }
 
-        const price = this.parsePrice(priceRaw);
+            if (
+                currentUrl.includes('/errors/validatecaptcha') ||
+                bodyText.includes('introduce los caracteres que ves a continuación') ||
+                bodyText.includes('enter the characters you see below')
+            ) {
+                throw new AmazonBlockedRequestError();
+            }
 
-        if (!title || !imageUrl || !Number.isFinite(price)) {
+            const title = (await page.textContent('#productTitle'))?.trim() ?? '';
+            const priceWhole = (await page.textContent('.a-price-whole'))?.trim() ?? '';
+            const priceFraction = (await page.textContent('.a-price-fraction'))?.trim() ?? '';
+            const imageUrl = (await page.getAttribute('#landingImage', 'src'))?.trim() ?? '';
+            const priceRaw = priceWhole && priceFraction ? `${priceWhole}.${priceFraction}` : priceWhole;
+            const price = this.parsePrice(priceRaw);
+
+            if (!title || !imageUrl || !Number.isFinite(price) || price <= 0) {
+                throw new AmazonProductDataInvalidError(asin);
+            }
+
+            const product = new Product(
+                randomUUID(),
+                asin,
+                title,
+                price,
+                'EUR',
+                imageUrl,
+                url,
+                'default-category-id',
+                true
+            );
+
+            return await this.productRepository.save(product);
+        } finally {
             await browser.close();
-            throw new Error('Producto inválido o incompleto.');
         }
-
-        const product = new Product(
-            uuidv4(),
-            asin,
-            title,
-            price,
-            'EUR',
-            imageUrl,
-            url,
-            'default-category-id',
-            true
-        );
-
-        const savedProduct = await this.productRepository.save(product);
-
-        await browser.close();
-        return savedProduct;
     }
 
     private parsePrice(raw: string): number {
         const cleaned = raw.replace(/[^\d.,-]/g, '');
+        
         if (!cleaned) return Number.NaN;
 
         let normalized = cleaned;
+
         if (normalized.includes(',') && normalized.includes('.')) {
             normalized = normalized.replace(/\./g, '').replace(',', '.');
         } else if (normalized.includes(',')) {
