@@ -10,6 +10,7 @@ import { AmazonScraper } from '../../infrastructure/scrapers/amazon.scraper';
 import { Product } from '../../domain/entities/product.entity';
 import {
     AmazonBlockedRequestError,
+    AmazonCategoryNotConfiguredError,
     AmazonProductDataInvalidError,
     AmazonProductNotFoundError,
 } from '../../infrastructure/scrapers/amazon-scraper.errors';
@@ -40,6 +41,10 @@ export class ScrapeAmazonProductUseCase {
 
             if (error instanceof AmazonProductDataInvalidError) {
                 throw new UnprocessableEntityException(error.message);
+            }
+
+            if (error instanceof AmazonCategoryNotConfiguredError) {
+                throw new InternalServerErrorException(error.message);
             }
 
             throw new InternalServerErrorException(

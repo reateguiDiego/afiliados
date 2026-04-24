@@ -1,19 +1,25 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { chromium } from 'playwright';
 import type { IProductRepository } from '../../domain/repositories/product.repository';
+import type { ICategoryRepository } from '../../domain/repositories/category.repository';
 import { Product } from '../../domain/entities/product.entity';
 import { randomUUID } from 'crypto';
 import {
     AmazonBlockedRequestError,
+    AmazonCategoryNotConfiguredError,
     AmazonProductDataInvalidError,
     AmazonProductNotFoundError,
 } from './amazon-scraper.errors';
+
+const DEFAULT_CATEGORY_SLUG = 'general';
 
 @Injectable()
 export class AmazonScraper {
     constructor(
         @Inject('IProductRepository')
         private readonly productRepository: IProductRepository,
+        @Inject('ICategoryRepository')
+        private readonly categoryRepository: ICategoryRepository,
     ) { }
 
     async scrapeAndSave(asin: string): Promise<Product> {
@@ -57,6 +63,8 @@ export class AmazonScraper {
                 throw new AmazonProductDataInvalidError(asin);
             }
 
+            const categoryId = await this.resolveDefaultCategoryId();
+
             const product = new Product(
                 randomUUID(),
                 asin,
@@ -65,7 +73,7 @@ export class AmazonScraper {
                 'EUR',
                 imageUrl,
                 url,
-                'default-category-id',
+                categoryId,
                 true
             );
 
@@ -89,5 +97,15 @@ export class AmazonScraper {
         }
 
         return Number.parseFloat(normalized);
+    }
+
+    private async resolveDefaultCategoryId(): Promise<string> {
+        const categoryId = await this.categoryRepository.findIdBySlug(DEFAULT_CATEGORY_SLUG);
+
+        if (!categoryId) {
+            throw new AmazonCategoryNotConfiguredError(DEFAULT_CATEGORY_SLUG);
+        }
+
+        return categoryId;
     }
 }

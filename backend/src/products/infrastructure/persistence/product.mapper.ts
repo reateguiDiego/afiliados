@@ -13,8 +13,8 @@ export class ProductMapper {
             prismaProduct.affiliateUrl,
             prismaProduct.categoryId,
             prismaProduct.isAvailable,
-            null, // Features
-            null, // Rating
+            undefined, // Features
+            undefined, // Rating
         );
     }
 }

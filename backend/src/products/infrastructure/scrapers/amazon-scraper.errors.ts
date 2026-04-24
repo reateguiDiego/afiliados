@@ -7,14 +7,21 @@ export class AmazonProductNotFoundError extends Error {
 
 export class AmazonBlockedRequestError extends Error {
     constructor() {
-        super('Amazon bloqueó temporalmente la solicitud (captcha o challenge).');
+        super('Amazon bloqueo temporalmente la solicitud (captcha o challenge).');
         this.name = 'AmazonBlockedRequestError';
     }
 }
 
 export class AmazonProductDataInvalidError extends Error {
     constructor(asin: string) {
-        super(`Datos inválidos o incompletos para el ASIN ${asin}.`);
+        super(`Datos invalidos o incompletos para el ASIN ${asin}.`);
         this.name = 'AmazonProductDataInvalidError';
+    }
+}
+
+export class AmazonCategoryNotConfiguredError extends Error {
+    constructor(slug: string) {
+        super(`No existe una categoria configurada para el slug "${slug}".`);
+        this.name = 'AmazonCategoryNotConfiguredError';
     }
 }
